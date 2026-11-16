@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>슈팅 게임 모음</title>
+<style>
+  :root { --bg: #06070f; --card: #11142a; --text: #e8ecff; --muted: #9aa3c7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at top, #1a1f4a 0%, var(--bg) 60%); color: var(--text);
+         font-family: "Segoe UI", "Malgun Gothic", sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
+  h1 { font-size: 40px; margin: 0 0 6px; letter-spacing: 2px; background: linear-gradient(90deg, #56ccf2, #f15bb5, #ffd166); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p.sub { color: var(--muted); margin: 0 0 36px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 960px; }
+  a.card { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--card); border-radius: 16px; overflow: hidden;
+           border: 2px solid transparent; transition: transform .15s, border-color .15s, box-shadow .15s; }
+  a.card:hover, a.card:focus-visible { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 40%, transparent); outline: none; }
+  canvas { width: 100%; height: 150px; display: block; }
+  .body { padding: 16px 18px 18px; }
+  .num { font-size: 13px; color: var(--accent); font-weight: bold; }
+  h2 { margin: 4px 0 8px; font-size: 22px; }
+  .desc { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 12px; min-height: 42px; }
+  .keys { font-size: 13px; color: #c8cfee; background: #0b0d1d; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; }
+  .best { font-size: 14px; }
+  .best b { color: var(--accent); }
+  .missing { opacity: .45; pointer-events: none; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>SHOOTING ARCADE</h1>
+<p class="sub">플레이할 게임을 고르세요 (숫자키 1·2·3)</p>
+<div class="grid">
+  <a class="card" href="shooter.html" style="--accent:#56ccf2" data-key="ss_best" data-art="vertical">
+    <canvas width="520" height="300"></canvas>
+    <div class="body">
+      <div class="num">GAME 1 · 세로 슈팅</div>
+      <h2>스카이 스트라이커</h2>
+      <p class="desc">위로 날아가며 쏘는 클래식 슈팅. 탄막을 피하고 보스를 쓰러뜨리세요.</p>
+      <div class="keys">방향키 이동 · 자동 발사 · B 폭탄 · Shift 정밀</div>
+      <div class="best">최고 점수 <b>0</b></div>
+    </div>
+  </a>
+  <a class="card" href="side.html" style="--accent:#ff8c5a" data-key="side_best" data-art="side">
+    <canvas width="520" height="300"></canvas>
+    <div class="body">
+      <div class="num">GAME 2 · 횡스크롤 슈팅</div>
+      <h2>나이트 윙</h2>
+      <p class="desc">석양의 도시 위를 가로질러 비행. 지상 포대와 거대 비행선을 상대하세요.</p>
+      <div class="keys">방향키 이동 · 자동 발사 · Space 꾹 → 관통 레이저</div>
+      <div class="best">최고 점수 <b>0</b></div>
+    </div>
+  </a>
+  <a class="card" href="orbit.html" style="--accent:#b8ff5a" data-key="orbit_best" data-art="orbit">
+    <canvas width="520" height="300"></canvas>
+    <div class="body">
+      <div class="num">GAME 3 · 360도 우주 슈팅</div>
+      <h2>오빗 디펜더</h2>
+      <p class="desc">사방에서 몰려오는 운석과 드론. 관성으로 날며 모든 방향을 막아내세요.</p>
+      <div class="keys">마우스 조준 · 클릭 사격 · 방향키 회전/가속</div>
+      <div class="best">최고 점수 <b>0</b></div>
+    </div>
+  </a>
+</div>
+<footer>게임 안에서 M 또는 ESC를 누르면 이 메뉴로 돌아와요</footer>
+<script>
+function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+const cards = [...document.querySelectorAll('a.card')];
+cards.forEach(c => { c.querySelector('.best b').textContent = (+(get(c.dataset.key) || 0)).toLocaleString(); });
+addEventListener('keydown', e => { const i = +e.key - 1; if (cards[i]) location.href = cards[i].href; });
+
+// 카드 미리보기 애니메이션
+const arts = cards.map(c => ({ type: c.dataset.art, ctx: c.querySelector('canvas').getContext('2d'),
+  stars: Array.from({ length: 50 }, () => ({ x: Math.random() * 520, y: Math.random() * 300, s: Math.random() * 2 + 0.5 })) }));
+let t = 0;
+function plane(ctx, x, y, rot, col, body) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(26, 12); ctx.lineTo(0, 8); ctx.lineTo(-26, 12); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = body; ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(8, 6); ctx.lineTo(0, 18); ctx.lineTo(-8, 6); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function frame() {
+  t++;
+  for (const a of arts) {
+    const c = a.ctx, W = 520, H = 300;
+    if (a.type === 'vertical') {
+      c.fillStyle = '#070a1c'; c.fillRect(0, 0, W, H);
+      for (const s of a.stars) { s.y = (s.y + s.s) % H; c.fillStyle = '#c8dcff'; c.fillRect(s.x, s.y, s.s, s.s * 2); }
+      const px = W / 2 + Math.sin(t / 40) * 120;
+      c.fillStyle = '#ffe066'; for (let i = 0; i < 6; i++) c.fillRect(px - 2, (H - 70 - ((t * 6 + i * 40) % 220)), 4, 14);
+      plane(c, px, H - 50, 0, '#2f80ed', '#dfe9ff');
+      for (let i = 0; i < 3; i++) plane(c, 120 + i * 140, 60 + Math.sin(t / 30 + i) * 20, Math.PI, '#ff5a5f', '#ffb3b5');
+    } else if (a.type === 'side') {
+      const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a0b2e'); g.addColorStop(0.6, '#7a2a5a'); g.addColorStop(1, '#ff8c5a');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.fillStyle = '#ffcf7a'; c.beginPath(); c.arc(360, 200, 50, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#1c0d26'; for (let i = 0; i < 14; i++) { const x = ((i * 45 - t * 1.5) % 630 + 630) % 630 - 60; c.fillRect(x, 300 - 40 - (i * 37 % 70), 40, 200); }
+      const py = 130 + Math.sin(t / 25) * 40;
+      c.fillStyle = 'rgba(125,249,255,.8)'; if ((t % 90) > 70) c.fillRect(150, py - 6, W, 12);
+      c.fillStyle = '#fff3b0'; for (let i = 0; i < 6; i++) c.fillRect(150 + ((t * 10 + i * 60) % 380), py - 1.5, 14, 3);
+      plane(c, 120, py, Math.PI / 2, '#2a9d8f', '#e9f5f2');
+    } else {
+      c.fillStyle = '#03040a'; c.fillRect(0, 0, W, H);
+      for (const s of a.stars) { c.fillStyle = '#556'; c.fillRect(s.x, s.y, 1.5, 1.5); }
+      c.shadowBlur = 12; c.lineWidth = 2;
+      c.shadowColor = c.strokeStyle = '#b8ff5a';
+      const ang = t / 30;
+      c.save(); c.translate(W / 2, H / 2); c.rotate(ang);
+      c.beginPath(); c.moveTo(20, 0); c.lineTo(-14, -12); c.lineTo(-8, 0); c.lineTo(-14, 12); c.closePath(); c.stroke(); c.restore();
+      c.fillStyle = '#b8ff5a'; for (let i = 0; i < 4; i++) { const d = 30 + ((t * 5 + i * 40) % 160); c.fillRect(W / 2 + Math.cos(ang) * d - 2, H / 2 + Math.sin(ang) * d - 2, 4, 4); }
+      c.shadowColor = c.strokeStyle = '#ff5ad1';
+      for (let i = 0; i < 5; i++) {
+        const a2 = i * 1.26 + t / 200, r = 120 + Math.sin(t / 40 + i) * 15;
+        const x = W / 2 + Math.cos(a2) * r * 1.6, y = H / 2 + Math.sin(a2) * r * 0.9;
+        c.beginPath(); for (let k = 0; k < 7; k++) { const aa = k / 7 * Math.PI * 2 + t / 50, rr = 16 + (k % 2) * 6; c.lineTo(x + Math.cos(aa) * rr, y + Math.sin(aa) * rr); } c.closePath(); c.stroke();
+      }
+      c.shadowBlur = 0;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>
